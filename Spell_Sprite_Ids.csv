@@ -1,0 +1,186 @@
+Spell,Widget Group Id,Widget Child Id,Disabled Id,Active Id
+Lumbridge Home Teleport,218,7,356,356
+Wind Strike,218,8,65,15
+Confuse,218,9,66,16
+Crossbow Bolt Enchantments,218,10,358,358
+Water Strike,218,11,67,17
+Jewellery Enchantments,218,12,366,366
+Lvl-1 Enchant,218,13,1845,1765
+Earth Strike,218,14,69,19
+Weaken,218,15,70,20
+Fire Strike,218,16,71,21
+Bones to Bananas,218,17,72,22
+Wind Bolt,218,18,73,23
+Curse,218,19,74,24
+Bind,218,20,369,319
+Low Level Alchemy,218,21,75,25
+Water Bolt,218,22,76,26
+Varrock Teleport,218,23,77,27
+Lvl-2 Enchant,218,24,1846,1766
+Earth Bolt,218,25,79,29
+Lumbridge Teleport,218,26,80,30
+Telekinetic Grab,218,27,81,31
+Fire Bolt,218,28,82,32
+Falador Teleport,218,29,83,33
+Crumble Undead,218,30,84,34
+Teleport to House,218,31,405,355
+Wind Blast,218,32,85,35
+Superheat Item,218,33,86,36
+Camelot Teleport,218,34,87,37
+Water Blast,218,35,88,38
+Kourend Castle Teleport,218,36,410,360
+Lvl-3 Enchant,218,37,1847,1767
+Iban Blast,218,38,103,53
+Snare,218,39,370,320
+Magic Dart,218,40,374,324
+Ardougne Teleport,218,41,104,54
+Earth Blast,218,42,90,40
+Civitas illa Fortis Teleport,218,43,417,367
+High Level Alchemy,218,44,91,41
+Charge Water Orb,218,45,92,42
+Lvl-4 Enchant,218,46,1848,1768
+Watchtower Teleport,218,47,105,55
+Fire Blast,218,48,94,44
+Charge Earth Orb,218,49,95,45
+Bones to Peaches,218,50,404,354
+Saradomin Strike,218,51,111,61
+Claws of Guthix,218,52,110,60
+Flames of Zamorak,218,53,109,59
+Trollheim Teleport,218,54,373,323
+Wind Wave,218,55,96,46
+Charge Fire Orb,218,56,97,47
+Ape Atoll Teleport,218,57,407,357
+Water Wave,218,58,98,48
+Charge Air Orb,218,59,99,49
+Vulnerability,218,60,106,56
+Lvl-5 Enchant,218,61,1849,1769
+Earth Wave,218,62,101,51
+Enfeeble,218,63,107,57
+Teleother Lumbridge,218,64,399,349
+Fire Wave,218,65,102,52
+Entangle,218,66,371,321
+Stun,218,67,108,58
+Charge,218,68,372,322
+Wind Surge,218,69,412,362
+Teleother Falador,218,70,400,350
+Water Surge,218,71,413,363
+Tele Block,218,72,402,352
+Teleport to Target,218,73,409,359
+Lvl-6 Enchant,218,74,1850,1770
+Teleother Camelot,218,75,401,351
+Earth Surge,218,76,414,364
+Lvl-7 Enchant,218,77,1851,1771
+Fire Surge,218,78,415,365
+Ice Rush,218,79,375,325
+Ice Blitz,218,80,377,327
+Ice Burst,218,81,376,326
+Ice Barrage,218,82,378,328
+Blood Rush,218,83,383,333
+Blood Blitz,218,84,385,335
+Blood Burst,218,85,384,334
+Blood Barrage,218,86,386,336
+Smoke Rush,218,87,379,329
+Smoke Blitz,218,88,381,331
+Smoke Burst,218,89,380,330
+Smoke Barrage,218,90,382,332
+Shadow Rush,218,91,387,337
+Shadow Blitz,218,92,389,339
+Shadow Burst,218,93,388,338
+Shadow Barrage,218,94,390,340
+Paddewwa Teleport,218,95,391,341
+Senntisten Teleport,218,96,392,342
+Kharyrll Teleport,218,97,393,343
+Lassar Teleport,218,98,394,344
+Dareeyak Teleport,218,99,395,345
+Carrallanger Teleport,218,100,396,346
+Annakarl Teleport,218,101,397,347
+Ghorrock Teleport,218,102,398,348
+Edgeville Home Teleport,218,103,356,356
+Lunar Home Teleport,218,104,356,356
+Bake Pie,218,105,593,543
+Cure Plant,218,106,617,567
+Monster Examine,218,107,627,577
+NPC Contact,218,108,618,568
+Cure Other,218,109,609,559
+Humidify,218,110,628,578
+Moonclan Teleport,218,111,594,544
+Tele Group Moonclan,218,112,619,569
+Cure Me,218,113,612,562
+Hunter Kit,218,114,629,579
+Waterbirth Teleport,218,115,595,545
+Tele Group Waterbirth,218,116,620,570
+Cure Group,218,117,615,565
+Stat Spy,218,118,626,576
+Barbarian Teleport,218,119,597,547
+Tele Group Barbarian,218,120,621,571
+Superglass Make,218,121,598,548
+Tan Leather,218,122,633,583
+Khazard Teleport,218,123,599,549
+Tele Group Khazard,218,124,622,572
+Dream,218,125,630,580
+String Jewellery,218,126,600,550
+Stat Restore Pot Share,218,127,604,554
+Magic Imbue,218,128,602,552
+Fertile Soil,218,129,603,553
+Boost Potion Share,218,130,604,551
+Fishing Guild Teleport,218,131,605,555
+Tele Group Fishing Guild,218,132,623,573
+Plank Make,218,133,631,581
+Catherby Teleport,218,134,606,556
+Tele Group Catherby,218,135,624,574
+Recharge Dragonstone,218,136,634,584
+Ice Plateau Teleport,218,137,607,557
+Tele Group Ice Plateau,218,138,625,575
+Energy Transfer,218,139,608,558
+Heal Other,218,140,610,560
+Vengeance Other,218,141,611,561
+Vengeance,218,142,614,564
+Heal Group,218,143,616,566
+Spellbook Swap,218,144,632,582
+Geomancy,218,145,613,563
+Spin Flax,218,146,635,585
+Ourania Teleport,218,147,636,586
+Arceuus Home Teleport,218,148,1251,1251
+Basic Reanimation,218,149,1272,1247
+Arceuus Library Teleport,218,150,1277,1252
+Adept Reanimation,218,151,1273,1248
+Expert Reanimation,218,152,1274,1249
+Master Reanimation,218,153,1275,1250
+Draynor Manor Teleport,218,154,1278,1253
+Mind Altar Teleport,218,156,1281,1256
+Respawn Teleport,218,157,1282,1257
+Salve Graveyard Teleport,218,158,1283,1258
+Fenkenstrain's Castle Teleport,218,159,1284,1259
+West Ardougne Teleport,218,160,1285,1260
+Harmony Island Teleport,218,161,1286,1261
+Cemetery Teleport,218,162,1289,1264
+Resurrect Crops,218,163,1291,1266
+Barrows Teleport,218,164,1287,1262
+Ape Atoll Teleport,218,165,1288,1263
+Battlefront Teleport,218,166,1255,1255
+Inferior Demonbane,218,167,1321,1302
+Superior Demonbane,218,168,1322,1303
+Dark Demonbane,218,169,1323,1304
+Mark of Darkness,218,170,1324,1305
+Ghostly Grasp,218,171,1292,1267
+Skeletal Grasp,218,172,1293,1268
+Undead Grasp,218,173,1294,1269
+Ward of Arceuus,218,174,1325,1306
+Lesser Corruption,218,175,1326,1307
+Greater Corruption,218,176,1327,1308
+Demonic Offering,218,177,1330,1311
+Sinister Offering,218,178,1331,1312
+Degrime,218,179,1318,1318
+Shadow Veil,218,180,1334,1315
+Vile Vigour,218,181,1336,1317
+Dark Lure,218,182,1335,1316
+Death Charge,218,183,1329,1310
+Resurrect Lesser Ghost,218,184,1295,1270
+Resurrect Lesser Skeleton,218,185,1296,1271
+Resurrect Lesser Zombie,218,186,1319,1300
+Resurrect Superior Ghost,218,187,2985,2979
+Resurrect Superior Skeleton,218,188,2987,2981
+Resurrect Superior Zombie,218,189,2989,2983
+Resurrect Greater Ghost,218,190,2986,2980
+Resurrect Greater Skeleton,218,191,2988,2982
+Resurrect Greater Zombie,218,192,2990,2984
