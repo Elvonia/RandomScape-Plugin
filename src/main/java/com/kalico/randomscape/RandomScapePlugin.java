@@ -139,11 +139,25 @@ public class RandomScapePlugin extends Plugin
 			626); // Seed vault located inside the Farming Guild.
 
 	static final List<int[]> EXCLUDED_ITEM_IDS = Arrays.asList(
-			new int[]{25990, 26153},
+			// Leagues rewards
 			new int[]{26421, 26560},
 			new int[]{24361, 24475},
 			new int[]{25001, 25117},
-			new int[]{25359, 25388}
+			new int[]{25359, 25386},
+			new int[]{28777, 28783},
+
+			// GE armour sets
+			new int[]{12960, 13066},
+			new int[]{21882, 21885},
+			new int[]{12863, 12883},
+			new int[]{21279, 21279},
+			new int[]{22438, 22438},
+			new int[]{23667, 23667},
+			new int[]{27335, 27335},
+
+			// DMM items
+			new int[]{25990, 26153},
+			new int[]{28477, 28570}
 	);
 
 	@Inject
