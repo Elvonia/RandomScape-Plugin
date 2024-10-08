@@ -395,6 +395,7 @@ public class RandomScapePlugin extends Plugin
 			if (!isTradeable && !unlockedItems.containsKey(realItemId)) {
 				queueItemUnlock(realItemId, realItemId);
 				notifyPlayerOfUnlock(realItemId);
+				continue;
 			}
 
 			int randomItemId = getRandomTradableItem(cachedTradableItems);
