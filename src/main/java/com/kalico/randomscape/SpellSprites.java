@@ -3,7 +3,7 @@ package com.kalico.randomscape;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SpellSpriteMap {
+public class SpellSprites {
     private final Map<Integer, Integer> spellToDisabledMap = new HashMap<>();
 
     public void initialize() {

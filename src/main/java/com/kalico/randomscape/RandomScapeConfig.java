@@ -8,20 +8,9 @@ import net.runelite.client.config.ConfigItem;
 public interface RandomScapeConfig extends Config
 {
 	@ConfigItem(
-			keyName = "namesRandomScapers",
-			name = "RandomScaper Names",
-			position = 1,
-			description = "Configures names of RandomScapers to highlight in chat. Format: (name), (name)"
-	)
-	default String namesRandomScapers()
-	{
-		return "";
-	}
-
-	@ConfigItem(
 			keyName = "screenshotUnlock",
 			name = "Screenshot new Unlocks",
-			position = 2,
+			position = 0,
 			description = "Take a screenshot whenever a new item is unlocked"
 	)
 	default boolean screenshotUnlock()
@@ -33,7 +22,7 @@ public interface RandomScapeConfig extends Config
 			keyName = "includeFrame",
 			name = "Include Client Frame",
 			description = "Configures whether or not the client frame is included in screenshots",
-			position = 3
+			position = 1
 	)
 	default boolean includeFrame()
 	{
@@ -44,7 +33,7 @@ public interface RandomScapeConfig extends Config
 			keyName = "sendNotification",
 			name = "Notify on unlock",
 			description = "Send a notification when a new item is unlocked",
-			position = 4
+			position = 2
 	)
 	default boolean sendNotification()
 	{
@@ -55,20 +44,9 @@ public interface RandomScapeConfig extends Config
 			keyName = "sendChatMessage",
 			name = "Chat message on unlock",
 			description = "Send a chat message when a new item is unlocked",
-			position = 5
+			position = 3
 	)
 	default boolean sendChatMessage()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-			keyName = "moveCollectionLogUnlocks",
-			name = "Move collection log unlocks",
-			description = "Moves the unlocks to the bottom of the 'Other' tab",
-			position = 6
-	)
-	default boolean moveCollectionLogUnlocks()
 	{
 		return false;
 	}
@@ -77,7 +55,7 @@ public interface RandomScapeConfig extends Config
 			keyName = "allowTrading",
 			name = "Allow trading",
 			description = "Allows the player to trade",
-			position = 7
+			position = 4
 	)
 	default boolean allowTrading()
 	{
@@ -88,7 +66,7 @@ public interface RandomScapeConfig extends Config
 			keyName = "resetCommand",
 			name = "Enable reset command",
 			description = "Enables the !rsreset command used for wiping your unlocked items",
-			position = 8
+			position = 5
 	)
 	default boolean resetCommand()
 	{
@@ -99,7 +77,7 @@ public interface RandomScapeConfig extends Config
 			keyName = "hideUntradeables",
 			name = "Hide Untradeable Items",
 			description = "Hides untradeable items in the collection log and in chat/notifications",
-			position = 9
+			position = 6
 	)
 	default boolean hideUntradeables() {
 		return false;

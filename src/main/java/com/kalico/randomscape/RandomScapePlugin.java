@@ -1,7 +1,6 @@
 package com.kalico.randomscape;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import com.google.common.util.concurrent.Runnables;
 import lombok.Getter;
@@ -66,10 +65,10 @@ public class RandomScapePlugin extends Plugin
 {
 	static final String CONFIG_GROUP = "randomscape";
 	public static final String CONFIG_KEY = "unlockeditems";
-	private static final String BM_UNLOCKS_STRING = "!rsunlocks";
-	private static final String BM_COUNT_STRING = "!rscount";
-	private static final String BM_RESET_STRING = "!rsreset";
-	private static final String BM_BACKUP_STRING = "!rsbackup";
+	private static final String UNLOCKS_STRING = "!rsunlocks";
+	private static final String COUNT_STRING = "!rscount";
+	private static final String RESET_STRING = "!rsreset";
+	private static final String BACKUP_STRING = "!rsbackup";
 
 	final int COMBAT_ACHIEVEMENT_BUTTON = 20;
 	final int COLLECTION_LOG_GROUP_ID = 621;
@@ -196,7 +195,7 @@ public class RandomScapePlugin extends Plugin
 	@Inject
 	private RandomScapeOverlay randomScapeOverlay;
 
-	private SpellSpriteMap spellSpriteMap = new SpellSpriteMap();
+	private SpellSprites spellSprites = new SpellSprites();
 
 	private Map<Integer, Integer> unlockedItems;
 
@@ -235,32 +234,19 @@ public class RandomScapePlugin extends Plugin
 	{
 		super.startUp();
 		onSeasonalWorld = false;
-		updateNamesRandomScape();
 		updateScreenshotUnlock();
 		loadResources();
 		unlockedItems = new HashMap<>();
 		overlayManager.add(randomScapeOverlay);
-		spellSpriteMap.initialize();
-		chatCommandManager.registerCommand(BM_UNLOCKS_STRING, this::OnUnlocksCountCommand);
-		chatCommandManager.registerCommand(BM_COUNT_STRING, this::OnUnlocksCountCommand);
-		chatCommandManager.registerCommand(BM_BACKUP_STRING, this::OnUnlocksBackupCommand);
+		spellSprites.initialize();
+		chatCommandManager.registerCommand(UNLOCKS_STRING, this::OnUnlocksCountCommand);
+		chatCommandManager.registerCommand(COUNT_STRING, this::OnUnlocksCountCommand);
+		chatCommandManager.registerCommand(BACKUP_STRING, this::OnUnlocksBackupCommand);
 
 		if (config.resetCommand())
 		{
-			chatCommandManager.registerCommand(BM_RESET_STRING, this::OnUnlocksResetCommand);
+			chatCommandManager.registerCommand(RESET_STRING, this::OnUnlocksResetCommand);
 		}
-
-		clientThread.invoke(() ->
-		{
-			if (client.getGameState() == GameState.LOGGED_IN)
-			{
-				onSeasonalWorld = isSeasonalWorld(client.getWorld());
-				if (!onSeasonalWorld)
-				{
-					setChatboxName(getNameChatbox());
-				}
-			}
-		});
 	}
 
 	@Override
@@ -270,22 +256,15 @@ public class RandomScapePlugin extends Plugin
 		itemEntries = null;
 		unlockedItems = null;
 		overlayManager.remove(randomScapeOverlay);
-		spellSpriteMap.shutdown();
-		chatCommandManager.unregisterCommand(BM_UNLOCKS_STRING);
-		chatCommandManager.unregisterCommand(BM_COUNT_STRING);
-		chatCommandManager.unregisterCommand(BM_BACKUP_STRING);
+		spellSprites.shutdown();
+		chatCommandManager.unregisterCommand(UNLOCKS_STRING);
+		chatCommandManager.unregisterCommand(COUNT_STRING);
+		chatCommandManager.unregisterCommand(BACKUP_STRING);
+
 		if (config.resetCommand())
 		{
-			chatCommandManager.unregisterCommand(BM_RESET_STRING);
+			chatCommandManager.unregisterCommand(RESET_STRING);
 		}
-
-		clientThread.invoke(() ->
-		{
-			if (client.getGameState() == GameState.LOGGED_IN && !onSeasonalWorld)
-			{
-				setChatboxName(getNameDefault());
-			}
-		});
 	}
 
 	@Subscribe
@@ -313,17 +292,6 @@ public class RandomScapePlugin extends Plugin
 			setupUnlockHistory();
 			loadPlayerUnlocks();
 		}
-	}
-
-	@Subscribe
-	public void onWidgetLoaded(WidgetLoaded e)
-	{
-		if (e.getGroupId() != COLLECTION_LOG_GROUP_ID || config.moveCollectionLogUnlocks()) {
-			return;
-		}
-
-		Widget collectionViewHeader = client.getWidget(COLLECTION_LOG_GROUP_ID, COLLECTION_VIEW_HEADER);
-		openRandomScapeCategory(collectionViewHeader);
 	}
 
 	@Subscribe
@@ -367,7 +335,7 @@ public class RandomScapePlugin extends Plugin
 			updateSpellbookItemChecks(hoveredSpellWidget);
 		}
 
-		if ((event.getScriptId() == COLLECTION_LOG_DRAW_LIST) && !config.moveCollectionLogUnlocks()) {
+		if ((event.getScriptId() == COLLECTION_LOG_DRAW_LIST)) {
 			Widget collectionLogWidget = client.getWidget(COLLECTION_LOG_GROUP_ID, COLLECTION_VIEW_HEADER);
 			openRandomScapeCategory(collectionLogWidget);
 		}
@@ -390,57 +358,11 @@ public class RandomScapePlugin extends Plugin
 	}
 
 	@Subscribe
-	public void onScriptCallbackEvent(ScriptCallbackEvent scriptCallbackEvent)
-	{
-		//log.debug("Script: " + scriptCallbackEvent.getScript() + " Name: " + scriptCallbackEvent.getEventName());
-		if (scriptCallbackEvent.getEventName().equals(SCRIPT_EVENT_SET_CHATBOX_INPUT) && !onSeasonalWorld)
-		{
-			setChatboxName(getNameChatbox());
-		}
-	}
-
-	@Subscribe
-	public void onChatMessage(ChatMessage chatMessage)
-	{
-		if (client.getGameState() != GameState.LOADING && client.getGameState() != GameState.LOGGED_IN)
-		{
-			return;
-		}
-
-		String name = Text.removeTags(chatMessage.getName());
-		switch (chatMessage.getType())
-		{
-			case PRIVATECHAT:
-			case MODPRIVATECHAT:
-				// Note this is unable to change icon on PMs if they are not a friend or in friends chat
-			case CLAN_CHAT:
-			case CLAN_GUEST_CHAT:
-			case FRIENDSCHAT:
-				if (isChatPlayerOnNormalWorld(name) && isChatPlayerRandomScaper(name))
-				{
-					addRandomScapeIconToMessage(chatMessage);
-				}
-				break;
-			case PUBLICCHAT:
-			case MODCHAT:
-				if (!onSeasonalWorld && isChatPlayerRandomScaper(name))
-				{
-					addRandomScapeIconToMessage(chatMessage);
-				}
-				break;
-		}
-	}
-
-	@Subscribe
 	public void onConfigChanged(ConfigChanged event)
 	{
 		if (event.getGroup().equals(CONFIG_GROUP))
 		{
-			if (event.getKey().equals("namesRandomScapers"))
-			{
-				updateNamesRandomScape();
-			}
-			else if (event.getKey().equals("screenshotUnlock") || event.getKey().equals("includeFrame"))
+			if (event.getKey().equals("screenshotUnlock") || event.getKey().equals("includeFrame"))
 			{
 				updateScreenshotUnlock();
 			}
@@ -448,11 +370,11 @@ public class RandomScapePlugin extends Plugin
 			{
 				if (config.resetCommand())
 				{
-					chatCommandManager.registerCommand(BM_RESET_STRING, this::OnUnlocksResetCommand);
+					chatCommandManager.registerCommand(RESET_STRING, this::OnUnlocksResetCommand);
 				}
 				else
 				{
-					chatCommandManager.unregisterCommand(BM_RESET_STRING);
+					chatCommandManager.unregisterCommand(RESET_STRING);
 				}
 			}
 		}
@@ -552,8 +474,8 @@ public class RandomScapePlugin extends Plugin
 				spellPreviewWidgets[i+1].setText("?/?");
 
 				int spriteId = hoveredSpellWidget.getSpriteId();
-				if (!spellSpriteMap.isDisabled(spriteId)) {
-					hoveredSpellWidget.setSpriteId(spellSpriteMap.getDisabledSpriteId(spriteId));
+				if (!spellSprites.isDisabled(spriteId)) {
+					hoveredSpellWidget.setSpriteId(spellSprites.getDisabledSpriteId(spriteId));
 				}
 			}
 		}
@@ -1089,16 +1011,7 @@ public class RandomScapePlugin extends Plugin
 		);
 	}
 
-	void addRandomScapeCategory()
-	{
-		clientThread.invokeLater(() -> {
-			addRandomScapeWidget(COLLECTION_VIEW_CATEGORIES_TEXT);
-			addRandomScapeWidget(COLLECTION_VIEW_CATEGORIES_RECTANGLE);
-			updateContainerScroll();
-		});
-	}
-
-	void killSearchResults() {
+	private void killSearchResults() {
 		Widget grandExchangeSearchResults = client.getWidget(162, GE_SEARCH_RESULTS);
 
 		if (grandExchangeSearchResults == null) {
@@ -1149,9 +1062,11 @@ public class RandomScapePlugin extends Plugin
 		}
 	}
 
-	private void updateNamesRandomScape()
+	private boolean sentByPlayer(ChatMessage chatMessage)
 	{
-		namesRandomScape = Text.fromCSV(config.namesRandomScapers());
+		MessageNode messageNode = chatMessage.getMessageNode();
+
+		return Text.sanitize(messageNode.getName()).equals(Text.sanitize(client.getLocalPlayer().getName()));
 	}
 
 	private void updateScreenshotUnlock()
@@ -1159,20 +1074,6 @@ public class RandomScapePlugin extends Plugin
 		boolean screenshotUnlock = config.screenshotUnlock();
 		boolean includeFrame = config.includeFrame();
 		randomScapeOverlay.updateScreenshotUnlock(screenshotUnlock, includeFrame);
-	}
-
-	private void addRandomScapeIconToMessage(ChatMessage chatMessage)
-	{
-		String name = chatMessage.getName();
-		if (!name.equals(Text.removeTags(name)))
-		{
-			return;
-		}
-
-		final MessageNode messageNode = chatMessage.getMessageNode();
-		messageNode.setName(getNameWithIcon(randomScapeIconOffset, name));
-
-		client.refreshChat();
 	}
 
 	private boolean isSeasonalWorld(int worldNumber)
@@ -1185,118 +1086,6 @@ public class RandomScapePlugin extends Plugin
 
 		World world = worlds.findWorld(worldNumber);
 		return world != null && world.getTypes().contains(WorldType.SEASONAL);
-	}
-
-	private boolean sentByPlayer(ChatMessage chatMessage)
-	{
-		MessageNode messageNode = chatMessage.getMessageNode();
-
-		return Text.sanitize(messageNode.getName()).equals(Text.sanitize(client.getLocalPlayer().getName()));
-	}
-
-	private void setChatboxName(String name)
-	{
-		Widget chatboxInput = client.getWidget(ComponentID.CHATBOX_INPUT);
-		if (chatboxInput != null)
-		{
-			String text = chatboxInput.getText();
-			int idx = text.indexOf(':');
-			if (idx != -1)
-			{
-				String newText = name + text.substring(idx);
-				chatboxInput.setText(newText);
-			}
-		}
-	}
-
-	private String getNameChatbox()
-	{
-		Player player = client.getLocalPlayer();
-		if (player != null)
-		{
-			Widget chatboxInput = client.getWidget(ComponentID.CHATBOX_INPUT);
-			String namePlusChannel = player.getName();
-			if (chatboxInput != null)
-			{
-				String text = chatboxInput.getText();
-				int idx = text.indexOf(':');
-				if (idx != -1)
-				{
-					namePlusChannel = text.substring(0,idx);
-				}
-			}
-			return getNameWithIcon(randomScapeIconOffset, namePlusChannel);
-		}
-		return null;
-	}
-
-	private String getNameDefault()
-	{
-		Player player = client.getLocalPlayer();
-		if (player == null)
-		{
-			return null;
-		}
-
-		int iconIndex;
-		switch (client.getAccountType())
-		{
-			case IRONMAN:
-				iconIndex = IconID.IRONMAN.getIndex();
-				break;
-			case HARDCORE_IRONMAN:
-				iconIndex = IconID.HARDCORE_IRONMAN.getIndex();
-				break;
-			case ULTIMATE_IRONMAN:
-				iconIndex = IconID.ULTIMATE_IRONMAN.getIndex();
-				break;
-			default:
-				return player.getName();
-		}
-
-		return getNameWithIcon(iconIndex, player.getName());
-	}
-
-	private static String getNameWithIcon(int iconIndex, String name)
-	{
-		String icon = "<img=" + iconIndex + ">";
-		return icon + name;
-	}
-
-	private ChatPlayer getChatPlayerFromName(String name)
-	{
-		// Search friends chat members first, because if a friend is in the friends chat but their private
-		// chat is 'off', then we won't know the world
-		FriendsChatManager friendsChatManager = client.getFriendsChatManager();
-		if (friendsChatManager != null)
-		{
-			FriendsChatMember friendsChatMember = friendsChatManager.findByName(name);
-			if (friendsChatMember != null)
-			{
-				return friendsChatMember;
-			}
-		}
-
-		NameableContainer<Friend> friendContainer = client.getFriendContainer();
-		return friendContainer.findByName(name);
-	}
-
-	private boolean isChatPlayerRandomScaper(String name)
-	{
-		return isChatPlayerOnNormalWorld(name) && (namesRandomScape.contains(name) || namesRandomScape.contains(name.replace('\u00A0', ' ')));
-	}
-
-	private boolean isChatPlayerOnNormalWorld(String name)
-	{
-		ChatPlayer player = getChatPlayerFromName(name);
-
-		if (player == null)
-		{
-			return true;
-		}
-
-		int world = player.getWorld();
-		return !isSeasonalWorld(world);
 	}
 
 	private void setupUnlockHistory()
@@ -1440,22 +1229,6 @@ public class RandomScapePlugin extends Plugin
 
 	private void loadResources()
 	{
-		final IndexedSprite[] modIcons = client.getModIcons();
-
-		if (randomScapeIconOffset != -1 || modIcons == null)
-		{
-			return;
-		}
-
 		unlockImage = ImageUtil.getResourceStreamFromClass(getClass(), "/item-unlocked.png");
-		BufferedImage image = ImageUtil.getResourceStreamFromClass(getClass(), "/bronzeman_icon.png");
-		IndexedSprite indexedSprite = ImageUtil.getImageIndexedSprite(image, client);
-
-		randomScapeIconOffset = modIcons.length;
-
-		final IndexedSprite[] newModIcons = Arrays.copyOf(modIcons, modIcons.length + 1);
-		newModIcons[newModIcons.length - 1] = indexedSprite;
-
-		//client.setModIcons(newModIcons);
 	}
 }
