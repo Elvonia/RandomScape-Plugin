@@ -1,5 +1,6 @@
 package com.kalico.randomscape;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import com.google.common.reflect.TypeToken;
 import com.google.common.util.concurrent.Runnables;
@@ -64,6 +65,7 @@ import static net.runelite.http.api.RuneLiteAPI.GSON;
 public class RandomScapePlugin extends Plugin
 {
 	static final String CONFIG_GROUP = "randomscape";
+	public static final String CONFIG_KEY = "unlockeditems";
 	private static final String BM_UNLOCKS_STRING = "!rsunlocks";
 	private static final String BM_COUNT_STRING = "!rscount";
 	private static final String BM_RESET_STRING = "!rsreset";
@@ -457,9 +459,6 @@ public class RandomScapePlugin extends Plugin
 
 	@Subscribe
 	public void onMenuEntryAdded(MenuEntryAdded event) {
-		if (event.getOption().equals("Take")) {
-
-		}
 		if (!isInventoryItemMenu(event) && !isShopItemMenu(event) &&
 				!isShopInventoryMenu(event)) {
 			return;
@@ -1089,33 +1088,32 @@ public class RandomScapePlugin extends Plugin
 		}
 	}
 
-
 	private void savePlayerUnlocks()
 	{
-		try
+		String key = client.getUsername() + "." + CONFIG_KEY;
+
+		if (unlockedItems == null || unlockedItems.isEmpty())
 		{
-			PrintWriter w = new PrintWriter(profileFile);
-			String json = GSON.toJson(unlockedItems);
-			w.println(json);
-			w.close();
+			configManager.unsetConfiguration(CONFIG_GROUP, key);
+			return;
 		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
+
+		String json = GSON.toJson(unlockedItems);
+		configManager.setConfiguration(CONFIG_GROUP, key, json);
 	}
 
 	private void loadPlayerUnlocks()
 	{
+		String key = client.getUsername() + "." + CONFIG_KEY;
+
+		String json = configManager.getConfiguration(CONFIG_GROUP, key);
 		unlockedItems.clear();
-		try
+
+		if (!Strings.isNullOrEmpty(json))
 		{
-			String json = new Scanner(profileFile).useDelimiter("\\Z").next();
+			// CHECKSTYLE:OFF
 			unlockedItems.putAll(GSON.fromJson(json, new TypeToken<Map<Integer, Integer>>(){}.getType()));
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
+			// CHECKSTYLE:ON
 		}
 	}
 
