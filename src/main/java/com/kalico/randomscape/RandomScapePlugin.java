@@ -946,11 +946,6 @@ public class RandomScapePlugin extends Plugin
 		}
 	}
 
-	private int getRandomTradableItem() {
-		return getRandomTradableItem(cachedTradableItems);
-	}
-
-
 	private List<Integer> getAllTradableItems()
 	{
 		List<Integer> tradableItems = new ArrayList<>();
