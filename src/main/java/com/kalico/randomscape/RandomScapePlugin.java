@@ -389,7 +389,7 @@ public class RandomScapePlugin extends Plugin
 			final boolean isTradeable = itemManager.getItemComposition(realItemId).isTradeable();
 
 			if (itemId == -1 || unlockedItems.containsKey(realItemId)) {
-				return;
+				continue;
 			}
 
 			if (!isTradeable && !unlockedItems.containsKey(realItemId)) {
@@ -956,7 +956,7 @@ public class RandomScapePlugin extends Plugin
 						.build());
 	}
 
-	void addRandomScapeWidget(int widgetId) {
+	private void addRandomScapeWidget(int widgetId) {
 		Widget logCategories = client.getWidget(COLLECTION_LOG_GROUP_ID, widgetId);
 		Widget[] categoryElements = logCategories.getDynamicChildren();
 		if (categoryElements.length == 0) {
@@ -982,7 +982,7 @@ public class RandomScapePlugin extends Plugin
 		logCategories.revalidate();
 	}
 
-	void updateContainerScroll() {
+	private void updateContainerScroll() {
 		Widget categoryContainer = client.getWidget(COLLECTION_LOG_GROUP_ID, COLLECTION_VIEW_CATEGORIES_CONTAINER);
 		Widget logCategories = client.getWidget(COLLECTION_LOG_GROUP_ID, COLLECTION_VIEW_CATEGORIES_RECTANGLE);
 		Widget[] categoryElements = logCategories.getDynamicChildren();
@@ -1091,70 +1091,6 @@ public class RandomScapePlugin extends Plugin
 	private void setupUnlockHistory()
 	{
 		profileKey = configManager.getRSProfileKey();
-
-		// If profiles are not being used yet, we continue to use the legacy system.
-		if (profileKey == null)
-		{
-			setupLegacyFile();
-		}
-		else
-		{
-			setupProfileFile();
-		}
-	}
-
-	private void setupLegacyFile()
-	{
-		profileFolder = new File(RuneLite.RUNELITE_DIR, "profiles/" + client.getUsername());
-		if (!profileFolder.exists())
-		{
-			profileFolder.mkdirs();
-		}
-
-		profileFile = new File(profileFolder, "randomscape-unlocks.txt");
-		if (!profileFile.exists())
-		{
-			try {
-				profileFile.createNewFile();
-				unlockDefaultItems();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
-	private void setupProfileFile()
-	{
-		legacyFolder = new File(RuneLite.RUNELITE_DIR, "profiles/" + client.getUsername());
-		legacyFile = new File(legacyFolder, "randomscape-unlocks.txt");
-
-		profileFolder = new File(RuneLite.RUNELITE_DIR, "profiles/" + profileKey);
-		if (!profileFolder.exists())
-		{
-			profileFolder.mkdirs();
-		}
-		profileFile = new File(profileFolder, "randomscape-unlocks.txt");
-		if (!profileFile.exists())
-		{
-			if (legacyFile.exists())
-			{
-				try {
-					Files.copy(legacyFile.toPath(), profileFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-				} catch (IOException e) {
-					e.printStackTrace();
-					return;
-				}
-			}
-			else
-			{
-				try {
-					profileFile.createNewFile();
-					unlockDefaultItems();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		}
 	}
 
 	private void OnUnlocksCountCommand(ChatMessage chatMessage, String message)
