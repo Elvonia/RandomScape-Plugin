@@ -138,6 +138,14 @@ public class RandomScapePlugin extends Plugin
 			612,  // Theater of Blood reward chest inventory (Raids 2).
 			626); // Seed vault located inside the Farming Guild.
 
+	static final List<int[]> EXCLUDED_ITEM_IDS = Arrays.asList(
+			new int[]{25990, 26153},
+			new int[]{26421, 26560},
+			new int[]{24361, 24475},
+			new int[]{25001, 25117},
+			new int[]{25359, 25388}
+	);
+
 	@Inject
 	private Client client;
 
@@ -441,19 +449,21 @@ public class RandomScapePlugin extends Plugin
 		Collection<ItemStack> items = event.getItems();
 		for (ItemStack itemStack : items) {
 			final int itemId = itemStack.getId();
-			final boolean isTradeable = itemManager.getItemComposition(itemId).isTradeable();
+			final int realItemId = itemManager.canonicalize(itemId);
+			final boolean isTradeable = itemManager.getItemComposition(realItemId).isTradeable();
 
-			if (!isTradeable && !unlockedItems.containsKey(itemId)) {
-				queueItemUnlock(itemId, itemId);
-				notifyPlayerOfUnlock(itemId);
+			if (itemId == -1 || unlockedItems.containsKey(realItemId)) {
+				return;
 			}
 
-			if (!unlockedItems.containsKey(itemId))
-			{
-				int randomItemId = getRandomTradableItem(cachedTradableItems);
-				queueItemUnlock(itemId, randomItemId);
+			if (!isTradeable && !unlockedItems.containsKey(realItemId)) {
+				queueItemUnlock(realItemId, realItemId);
+				notifyPlayerOfUnlock(realItemId);
+			}
+
+			int randomItemId = getRandomTradableItem(cachedTradableItems);
+				queueItemUnlock(realItemId, randomItemId);
 				notifyPlayerOfUnlock(randomItemId);
-			}
 		}
 	}
 
@@ -892,13 +902,14 @@ public class RandomScapePlugin extends Plugin
 		for (Widget widget : childWidgets){
 			if (widget != null) {
 				int itemId = widget.getItemId();
-				ItemComposition itemComposition = itemManager.getItemComposition(itemId);
+				int realItemId = itemManager.canonicalize(itemId);
+				ItemComposition itemComposition = itemManager.getItemComposition(realItemId);
 				boolean isTradable = itemComposition.isTradeable();
 
 				if (itemId == -1) {
 					continue;
 				}
-				if (!unlockedItems.containsValue(itemId) && isTradable) {
+				if (!unlockedItems.containsValue(realItemId) && isTradable) {
 					widget.setOpacity(200);
 				} else {
 					widget.setOpacity(0);
@@ -917,10 +928,11 @@ public class RandomScapePlugin extends Plugin
 			int noteId = itemComposition.getNote();
 			boolean detectedItemIsTradable = itemComposition.isTradeable();
 
-			if (itemId != realItemId && noteId != 799) continue;
-			if (i.getId() <= 1 || i.getQuantity() <= 0) continue;
+			if (itemId == -1 || itemId != realItemId && itemId == noteId) {
+				continue;
+			}
 
-			if (!detectedItemIsTradable && !unlockedItems.containsKey(realItemId)) {
+			if (!detectedItemIsTradable && !unlockedItems.containsKey(realItemId) && itemId == realItemId) {
 				queueItemUnlock(realItemId, realItemId);
 				notifyPlayerOfUnlock(realItemId);
 			}
@@ -932,6 +944,10 @@ public class RandomScapePlugin extends Plugin
 				notifyPlayerOfUnlock(randomItemId);
 			}
 		}
+	}
+
+	private int getRandomTradableItem() {
+		return getRandomTradableItem(cachedTradableItems);
 	}
 
 
@@ -954,7 +970,14 @@ public class RandomScapePlugin extends Plugin
 	private int getRandomTradableItem(List<Integer> tradableItems)
 	{
 		Random random = new Random();
-		return tradableItems.get(random.nextInt(tradableItems.size()));
+		Integer itemId = tradableItems.get(random.nextInt(tradableItems.size()));
+		for (int[] range : EXCLUDED_ITEM_IDS) {
+			if (itemId >= range[0] && itemId <= range[1]) {
+				getRandomTradableItem(tradableItems);
+				break;
+			}
+		}
+		return itemId;
 	}
 
 	private void notifyPlayerOfUnlock(int unlockedItemId)
