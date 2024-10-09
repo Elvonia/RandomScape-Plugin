@@ -580,6 +580,7 @@ public class RandomScapePlugin extends Plugin
 		swapButton.setAction(1, "Swap");
 		swapButton.setOnOpListener((JavaScriptCallback) e -> openSwap());
 		swapButton.revalidate();
+		swapView = false;
 	}
 
 	private void openSearch() {
