@@ -35,6 +35,7 @@ public class RandomScapeOverlay extends Overlay
     private int displayY;
 
     private final List<Integer> itemUnlockList;
+    private final List<Integer> randomItemsList;
     private boolean screenshotUnlock;
     private boolean includeFrame;
 
@@ -60,14 +61,16 @@ public class RandomScapeOverlay extends Overlay
         this.client = client;
         this.plugin = plugin;
         this.itemUnlockList = new ArrayList<>();
+        this.randomItemsList = new ArrayList<>();
         this.screenshotUnlock = false;
         this.includeFrame = false;
         setPosition(OverlayPosition.TOP_CENTER);
     }
 
-    public void addItemUnlock(int itemId)
+    public void addItemUnlock(int itemId, ArrayList<Integer> randomItemsToShow)
     {
         itemUnlockList.add(itemId);
+        randomItemsList.addAll(randomItemsToShow);
     }
 
     public void updateScreenshotUnlock(boolean doScreenshotUnlock, boolean doIncludeFrame)
@@ -96,15 +99,54 @@ public class RandomScapeOverlay extends Overlay
             return null;
         }
 
-        // Drawing unlock pop-up at the top of the screen.
-        graphics.drawImage(plugin.getUnlockImage(),-62, displayY, null);
-        graphics.drawImage(itemManager.getImage(currentUnlock, 1, false),-50, displayY + 7, null);
+        graphics.drawImage(plugin.getRollingImage(),-62, displayY, null);
+
+        // Cycle through random items for the first 4-5 seconds //
+        if (System.currentTimeMillis() < displayTime + 2000){
+            graphics.drawImage(itemManager.getImage(plugin.getRandomTradableItem(plugin.cachedTradableItems), 1, false),-50, displayY + 7, null);
+        }
+        else if (System.currentTimeMillis() < displayTime + 2100){
+            graphics.drawImage(itemManager.getImage(randomItemsList.get(0), 1, false),-50, displayY + 7, null);
+        }
+        else if (System.currentTimeMillis() < displayTime + 2200){
+            graphics.drawImage(itemManager.getImage(randomItemsList.get(1), 1, false),-50, displayY + 7, null);
+        }
+        else if (System.currentTimeMillis() < displayTime + 2300){
+            graphics.drawImage(itemManager.getImage(randomItemsList.get(2), 1, false),-50, displayY + 7, null);
+        }
+        else if (System.currentTimeMillis() < displayTime + 2500){
+            graphics.drawImage(itemManager.getImage(randomItemsList.get(3), 1, false),-50, displayY + 7, null);
+        }
+        else if (System.currentTimeMillis() < displayTime + 2700){
+            graphics.drawImage(itemManager.getImage(randomItemsList.get(4), 1, false),-50, displayY + 7, null);
+        }
+        else if (System.currentTimeMillis() < displayTime + 3000){
+            graphics.drawImage(itemManager.getImage(randomItemsList.get(5), 1, false),-50, displayY + 7, null);
+        }
+        else if (System.currentTimeMillis() < displayTime + 3300){
+            graphics.drawImage(itemManager.getImage(randomItemsList.get(6), 1, false),-50, displayY + 7, null);
+        }
+        else if (System.currentTimeMillis() < displayTime + 3700){
+            graphics.drawImage(itemManager.getImage(randomItemsList.get(7), 1, false),-50, displayY + 7, null);
+        }
+        else if (System.currentTimeMillis() < displayTime + 4100){
+            graphics.drawImage(itemManager.getImage(randomItemsList.get(8), 1, false),-50, displayY + 7, null);
+        }
+        else if (System.currentTimeMillis() < displayTime + 4550){
+            graphics.drawImage(itemManager.getImage(randomItemsList.get(9), 1, false),-50, displayY + 7, null);
+        }
+        // show the unlocked item for the last couple seconds //
+        else {
+            graphics.drawImage(plugin.getUnlockImage(),-62, displayY, null);
+            graphics.drawImage(itemManager.getImage(currentUnlock, 1, false),-50, displayY + 7, null);
+        }
+
         if (displayY < 10)
         {
             displayY = displayY + 1;
         }
 
-        if (System.currentTimeMillis() > displayTime + (5000))
+        if (System.currentTimeMillis() > displayTime + (7000))
         {
             if (screenshotUnlock)
             {
@@ -115,6 +157,7 @@ public class RandomScapeOverlay extends Overlay
                 takeScreenshot(fileName);
             }
             itemUnlockList.remove(currentUnlock);
+            randomItemsList.remove(10);
             currentUnlock = null;
         }
         return null;

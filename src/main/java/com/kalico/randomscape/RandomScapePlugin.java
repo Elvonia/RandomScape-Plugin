@@ -145,15 +145,6 @@ public class RandomScapePlugin extends Plugin
 			new int[]{25359, 25386},
 			new int[]{28777, 28783},
 
-			// GE armour sets
-			new int[]{12960, 13066},
-			new int[]{21882, 21885},
-			new int[]{12863, 12883},
-			new int[]{21279, 21279},
-			new int[]{22438, 22438},
-			new int[]{23667, 23667},
-			new int[]{27335, 27335},
-
 			// DMM items
 			new int[]{25990, 26153},
 			new int[]{28477, 28570}
@@ -201,6 +192,8 @@ public class RandomScapePlugin extends Plugin
 
 	@Getter
 	private BufferedImage unlockImage = null;
+	@Getter
+	private BufferedImage rollingImage = null;
 
 	private static final String SCRIPT_EVENT_SET_CHATBOX_INPUT = "setChatboxInput";
 
@@ -219,7 +212,7 @@ public class RandomScapePlugin extends Plugin
 	private File profileFolder;
 	private String profileKey;
 
-	private List<Integer> cachedTradableItems;
+	public List<Integer> cachedTradableItems;
 	private boolean swapView = false;
 	private Widget hoveredSpellWidget;
 
@@ -393,13 +386,13 @@ public class RandomScapePlugin extends Plugin
 			}
 
 			if (!isTradeable && !unlockedItems.containsKey(realItemId)) {
-				queueItemUnlock(realItemId, realItemId);
+				queueItemUnlock(realItemId, realItemId, false);
 				notifyPlayerOfUnlock(realItemId);
 				continue;
 			}
 
 			int randomItemId = getRandomTradableItem(cachedTradableItems);
-				queueItemUnlock(realItemId, randomItemId);
+				queueItemUnlock(realItemId, randomItemId, true);
 				notifyPlayerOfUnlock(randomItemId);
 		}
 	}
@@ -871,14 +864,14 @@ public class RandomScapePlugin extends Plugin
 			}
 
 			if (!detectedItemIsTradable && !unlockedItems.containsKey(realItemId) && itemId == realItemId) {
-				queueItemUnlock(realItemId, realItemId);
+				queueItemUnlock(realItemId, realItemId, false);
 				notifyPlayerOfUnlock(realItemId);
 			}
 
 			if (!unlockedItems.containsKey(realItemId))
 			{
 				int randomItemId = getRandomTradableItem(cachedTradableItems);
-				queueItemUnlock(realItemId, randomItemId);
+				queueItemUnlock(realItemId, randomItemId, true);
 				notifyPlayerOfUnlock(randomItemId);
 			}
 		}
@@ -893,24 +886,25 @@ public class RandomScapePlugin extends Plugin
 			ItemComposition itemComposition = itemManager.getItemComposition(id);
 			if (itemComposition.isTradeable())
 			{
-				tradableItems.add(id);
+				// check for excluded tradeable items //
+				boolean isExcluded = false;
+				int itemID = itemComposition.getId();
+				for (int[] range : EXCLUDED_ITEM_IDS) {
+					if (itemID >= range[0] && itemID <= range[1]) {
+						isExcluded = true;
+					}
+				}
+				if (!isExcluded) { tradableItems.add(id); }
 			}
 		}
 
 		return tradableItems;
 	}
 
-	private int getRandomTradableItem(List<Integer> tradableItems)
+	public int getRandomTradableItem(List<Integer> tradableItems)
 	{
 		Random random = new Random();
-		Integer itemId = tradableItems.get(random.nextInt(tradableItems.size()));
-		for (int[] range : EXCLUDED_ITEM_IDS) {
-			if (itemId >= range[0] && itemId <= range[1]) {
-				getRandomTradableItem(tradableItems);
-				break;
-			}
-		}
-		return itemId;
+		return tradableItems.get(random.nextInt(tradableItems.size()));
 	}
 
 	private void notifyPlayerOfUnlock(int unlockedItemId)
@@ -926,10 +920,16 @@ public class RandomScapePlugin extends Plugin
 		}
 	}
 
-	public void queueItemUnlock(int detectedItemId, int unlockedItemId)
+	public void queueItemUnlock(int detectedItemId, int unlockedItemId, boolean showNotification)
 	{
 		unlockedItems.put(detectedItemId, unlockedItemId);
-		randomScapeOverlay.addItemUnlock(unlockedItemId);
+		if (showNotification) {
+			ArrayList<Integer> randomItems = new ArrayList<Integer>();
+			for (int i = 0; i < 10; i++){
+				randomItems.add(getRandomTradableItem(cachedTradableItems));
+			}
+			randomScapeOverlay.addItemUnlock(unlockedItemId, randomItems);
+		}
 		savePlayerUnlocks();
 	}
 
@@ -952,8 +952,8 @@ public class RandomScapePlugin extends Plugin
 
 	private void unlockDefaultItems()
 	{
-		queueItemUnlock(ItemID.COINS_995, ItemID.COINS_995);
-		queueItemUnlock(ItemID.OLD_SCHOOL_BOND, ItemID.OLD_SCHOOL_BOND);
+		queueItemUnlock(ItemID.COINS_995, ItemID.COINS_995, false);
+		queueItemUnlock(ItemID.OLD_SCHOOL_BOND, ItemID.OLD_SCHOOL_BOND, false);
 	}
 
 	private void sendChatMessage(String chatMessage)
@@ -1177,5 +1177,6 @@ public class RandomScapePlugin extends Plugin
 	private void loadResources()
 	{
 		unlockImage = ImageUtil.getResourceStreamFromClass(getClass(), "/item-unlocked.png");
+		rollingImage = ImageUtil.getResourceStreamFromClass(getClass(), "/rolling.png");
 	}
 }
