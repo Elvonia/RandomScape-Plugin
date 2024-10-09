@@ -814,7 +814,7 @@ public class RandomScapePlugin extends Plugin
 						clientThread.invoke(() ->
 						{
 							deleteConfirmed = true;
-							queueItemDelete(itemId);
+							queueItemDelete(itemId, swapView);
 							sendChatMessage("Item '" + itemName + "' is no longer unlocked.");
 							deleteConfirmed = false;
 						})
@@ -932,10 +932,21 @@ public class RandomScapePlugin extends Plugin
 		savePlayerUnlocks();
 	}
 
-	public void queueItemDelete(int itemId)
+	public void queueItemDelete(int itemId, boolean swapView)
 	{
-		unlockedItems.remove(itemId);
-		savePlayerUnlocks();
+		if (!swapView) {
+			for (Map.Entry<Integer,Integer> entry : unlockedItems.entrySet()) {
+				if (entry.getValue().equals(itemId)) {
+					unlockedItems.remove(entry.getKey());
+					savePlayerUnlocks();
+					return;
+				}
+			}
+		} else {
+			unlockedItems.remove(itemId);
+			savePlayerUnlocks();
+		}
+
 	}
 
 	private void unlockDefaultItems()
@@ -1057,9 +1068,7 @@ public class RandomScapePlugin extends Plugin
 
 		if (!Strings.isNullOrEmpty(json))
 		{
-			// CHECKSTYLE:OFF
 			unlockedItems.putAll(GSON.fromJson(json, new TypeToken<Map<Integer, Integer>>(){}.getType()));
-			// CHECKSTYLE:ON
 		}
 	}
 
