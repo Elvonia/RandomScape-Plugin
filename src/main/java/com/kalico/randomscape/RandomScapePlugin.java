@@ -316,12 +316,16 @@ public class RandomScapePlugin extends Plugin
 			hoveredSpellWidget = scriptEvent.getSource();
 		}
 
-		if (event.getScriptId() == MAGIC_SPELLBOOK_HASRUNES ||
-				event.getScriptId() == MAGIC_SPELLBOOK_REDRAW_CS ||
+		if (event.getScriptId() == MAGIC_SPELLBOOK_REDRAW_CS ||
 				event.getScriptId() == MAGIC_SPELLBOOK_REDRAW_PROC ||
 				event.getScriptId() == MAGIC_SPELLBOOK_INIT ||
 				event.getScriptId() == MAGIC_SPELLBOOK_INIT_SPELLS) {
 			log.debug("Script ID: " + event.getScriptId() + " Script Event Name: " + event.getScriptEvent());
+		}
+
+		if (event.getScriptId() == MAGIC_SPELLBOOK_HASRUNES) {
+			ScriptEvent e = event.getScriptEvent();
+			log.debug(Arrays.toString(e.getArguments()));
 		}
 	}
 
@@ -906,8 +910,7 @@ public class RandomScapePlugin extends Plugin
 		Integer itemId = tradableItems.get(random.nextInt(tradableItems.size()));
 		for (int[] range : EXCLUDED_ITEM_IDS) {
 			if (itemId >= range[0] && itemId <= range[1]) {
-				getRandomTradableItem(tradableItems);
-				break;
+				return getRandomTradableItem(tradableItems);
 			}
 		}
 		return itemId;
