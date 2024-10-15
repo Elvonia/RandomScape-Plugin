@@ -28,6 +28,6 @@ public class ItemSlot {
 
     public void cropRightImage(int offset) {
         croppedImage = image;
-        croppedImage = croppedImage.getSubimage(35 - offset, 0, 35 - offset, croppedImage.getHeight());
+        croppedImage = croppedImage.getSubimage(0, 0, 36 - offset, croppedImage.getHeight());
     }
 }

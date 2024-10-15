@@ -2,24 +2,17 @@ package com.kalico;
 
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
-import net.runelite.api.ItemComposition;
-import java.awt.Point;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.util.ImageCapture;
 import net.runelite.client.ui.ClientUI;
 import net.runelite.client.ui.DrawManager;
-import net.runelite.client.util.ImageUploadStyle;
 
 import javax.inject.Inject;
-import javax.swing.SwingUtilities;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.function.Consumer;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,14 +22,16 @@ public class RandomScapeOverlay extends Overlay
 
     private final Client client;
     private final RandomScapePlugin plugin;
-
-    private Integer currentUnlock;
-    private long displayTime;
+    private int currentUnlock;
     private int displayY;
-
-    private final List<Integer> itemUnlockList;
-    private boolean screenshotUnlock;
-    private boolean includeFrame;
+    private int displayX;
+    private long displayTime;
+    private final List<ItemSlot> itemList;
+    private boolean notified;
+    private boolean isResized;
+    private boolean isSpinning;
+    private int centerPos;
+    private boolean centered;
 
     @Inject
     private ItemManager itemManager;
@@ -59,115 +54,109 @@ public class RandomScapeOverlay extends Overlay
         super(plugin);
         this.client = client;
         this.plugin = plugin;
-        this.itemUnlockList = new ArrayList<>();
-        this.screenshotUnlock = false;
-        this.includeFrame = false;
+        this.itemList = new ArrayList<>();
+        this.notified = false;
         setPosition(OverlayPosition.TOP_CENTER);
     }
 
-    public void addItemUnlock(int itemId)
+    public void addItemUnlock(List<Integer> itemIds)
     {
-        itemUnlockList.add(itemId);
-    }
+        notified = false;
+        isResized = client.isResized();
 
-    public void updateScreenshotUnlock(boolean doScreenshotUnlock, boolean doIncludeFrame)
-    {
-        screenshotUnlock = doScreenshotUnlock;
-        includeFrame = doIncludeFrame;
+        for (int itemId : itemIds) {
+            ItemSlot itemSlot = new ItemSlot(itemId, itemManager.getImage(itemId));
+            itemList.add(itemSlot);
+            log.debug("W: {} H: {}", itemSlot.image.getWidth(), itemSlot.image.getHeight());
+        }
+        currentUnlock = itemList.get(2).itemId;
     }
 
     @Override
     public Dimension render(Graphics2D graphics)
     {
-        if (client.getGameState() != GameState.LOGGED_IN || itemUnlockList.isEmpty())
+        if (client.getGameState() != GameState.LOGGED_IN || itemManager == null)
         {
             return null;
         }
-        if (itemManager == null)
+        if (itemList.isEmpty())
         {
-            System.out.println("Item-manager is null");
-            return null;
-        }
-        if (currentUnlock == null)
-        {
-            currentUnlock = itemUnlockList.get(0);
-            displayTime = System.currentTimeMillis();
             displayY = -20;
+            displayTime = System.currentTimeMillis();
+            centered = false;
             return null;
+        }
+        if (isResized) // x-axis correction for fixed/resized modes
+        {
+            displayX = 13;
+        } else {
+            displayX = -93;
         }
 
-        // Drawing unlock pop-up at the top of the screen.
-        graphics.drawImage(plugin.getUnlockImage(),-62, displayY, null);
-        graphics.drawImage(itemManager.getImage(currentUnlock, 1, false),-50, displayY + 7, null);
+        centerPos = displayX + 5 + (176 / 2) + 18;
+
+        if (System.currentTimeMillis() > displayTime + (5000)) {
+            graphics.drawImage(plugin.getUnlockImageText(), displayX, displayY, null);
+        }
+        else {
+            graphics.drawImage(plugin.getUnlockImageNoText(), displayX, displayY, null);
+        }
+
+        // Overlay Dimensions:  180 x 65
+        // Overlay Inner Dims:  176 x 36
+        // Item Image Dims:     36 x 32
+
+        for (ItemSlot item : itemList) {
+            if (item.x == null) {
+                item.x = itemList.indexOf(item) * 36 + displayX + 8;
+            }
+            if (item.isSpinning) {
+                if (item.x >= displayX + 5) {
+                    item.x -= 1;
+                }
+            }
+            if (item.x > displayX + 5 - 36 && item.x < displayX + 5 + 175) {
+                graphics.drawImage(item.getImage(), item.x, displayY + 7, null); // displayX + 78
+            }
+        }
+        if (System.currentTimeMillis() > displayTime + (600)) {
+            for (ItemSlot item : itemList) {
+                if (item.x == null) {
+                    continue;
+                }
+                if (System.currentTimeMillis() > displayTime + (5000)) {
+                    item.isSpinning = false;
+                } else {
+                    item.isSpinning = true;
+                }
+                if (item.isSpinning == false) {
+                    continue;
+                }
+                if (item.x < displayX + 5 && item.getImage().getWidth() == 1) {
+                    itemList.add(new ItemSlot(item.itemId, item.image));
+                    itemList.remove(item);
+                    break;
+                }
+                if (item.x < displayX + 5 && item.getImage().getWidth() > 1) {
+                    //log.debug("Item X: {}", displayX + 5 - item.x);
+                    item.cropLeftImage(displayX + 5 - item.x);
+                    //log.debug("CropL ID: {} W: {}", item.itemId, item.getImage().getWidth());
+                }
+                if (item.x < displayX + 5 + 176 && item.x > displayX + 5 + 140) {
+                    log.debug("Item X: {}", item.x - (displayX + 5 + 140));
+                    item.cropRightImage(item.x - (displayX + 5 + 140));
+                    log.debug("CropR ID: {} W: {}", item.itemId, item.getImage().getWidth());
+                }
+            }
+        }
+        if (System.currentTimeMillis() > displayTime + (8000)) {
+            itemList.clear();
+        }
+        // slides the overlay down vertically from above the screen
         if (displayY < 10)
         {
             displayY = displayY + 1;
         }
-
-        if (System.currentTimeMillis() > displayTime + (5000))
-        {
-            if (screenshotUnlock)
-            {
-                int itemID = currentUnlock;
-                ItemComposition itemComposition = itemManager.getItemComposition(itemID);
-                String itemName = itemComposition.getName();
-                String fileName = "ItemUnlocked " + itemName + " ";
-                takeScreenshot(fileName);
-            }
-            itemUnlockList.remove(currentUnlock);
-            currentUnlock = null;
-        }
         return null;
-    }
-
-    /**
-     * Saves a screenshot of the client window to the screenshot folder as a PNG,
-     * and optionally uploads it to an image-hosting service.
-     *
-     * @param fileName    Filename to use, without file extension.
-     */
-    private void takeScreenshot(String fileName)
-    {
-        Consumer<Image> imageCallback = (img) ->
-        {
-            // This callback is on the game thread, move to executor thread
-            executor.submit(() -> takeScreenshot(fileName, img));
-        };
-
-        drawManager.requestNextFrameListener(imageCallback);
-    }
-
-    private void takeScreenshot(String fileName, Image image)
-    {
-        BufferedImage screenshot = includeFrame
-                ? new BufferedImage(clientUi.getWidth(), clientUi.getHeight(), BufferedImage.TYPE_INT_ARGB)
-                : new BufferedImage(image.getWidth(null), image.getHeight(null), BufferedImage.TYPE_INT_ARGB);
-
-        Graphics graphics = screenshot.getGraphics();
-
-        int gameOffsetX = 0;
-        int gameOffsetY = 0;
-
-        if (includeFrame)
-        {
-            // Draw the client frame onto the screenshot
-            try
-            {
-                SwingUtilities.invokeAndWait(() -> clientUi.paint(graphics));
-            }
-            catch (InterruptedException | InvocationTargetException e)
-            {
-                log.warn("unable to paint client UI on screenshot", e);
-            }
-
-            // Evaluate the position of the game inside the frame
-            final Point canvasOffset = clientUi.getCanvasOffset();
-            gameOffsetX = (int)canvasOffset.getX();
-            gameOffsetY = (int)canvasOffset.getY();
-        }
-
-        // Draw the game onto the screenshot
-        graphics.drawImage(image, gameOffsetX, gameOffsetY, null);
-        imageCapture.takeScreenshot(screenshot, fileName, "Item Unlocks", false, ImageUploadStyle.NEITHER);
     }
 }

@@ -938,7 +938,18 @@ public class RandomScapePlugin extends Plugin
 	{
 		unlockedItems.put(detectedItemId, unlockedItemId);
 		if (showNotification) {
-			randomScapeOverlay.addItemUnlock(unlockedItemId);
+			List<Integer> list = new ArrayList<>();
+			list.add(unlockedItemId);
+			list.add(unlockedItemId);
+			list.add(unlockedItemId);
+			list.add(unlockedItemId);
+			list.add(unlockedItemId);
+			list.add(unlockedItemId);
+			list.add(unlockedItemId);
+			list.add(unlockedItemId);
+			list.add(unlockedItemId);
+			list.add(unlockedItemId);
+			randomScapeOverlay.addItemUnlock(list);
 		}
 		savePlayerUnlocks();
 	}
