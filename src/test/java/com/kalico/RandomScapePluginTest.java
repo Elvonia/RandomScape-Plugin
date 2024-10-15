@@ -1,4 +1,4 @@
-package com.kalico.randomscape;
+package com.kalico;
 
 import net.runelite.client.RuneLite;
 import net.runelite.client.externalplugins.ExternalPluginManager;

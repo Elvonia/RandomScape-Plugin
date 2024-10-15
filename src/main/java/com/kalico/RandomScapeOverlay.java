@@ -1,4 +1,4 @@
-package com.kalico.randomscape;
+package com.kalico;
 
 import net.runelite.api.Client;
 import net.runelite.api.GameState;

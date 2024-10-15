@@ -1,4 +1,4 @@
-package com.kalico.randomscape;
+package com.kalico;
 
 import com.google.common.base.Strings;
 import com.google.common.reflect.TypeToken;
@@ -11,7 +11,6 @@ import net.runelite.client.events.PluginChanged;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.widgets.*;
 import net.runelite.api.widgets.ComponentID;
-import net.runelite.client.RuneLite;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.game.ItemStack;
 import net.runelite.client.plugins.Plugin;
@@ -202,6 +201,12 @@ public class RandomScapePlugin extends Plugin
 	@Getter
 	private BufferedImage unlockImage = null;
 
+	@Getter
+	private BufferedImage unlockImageText = null;
+
+	@Getter
+	private BufferedImage unlockImageNoText = null;
+
 	private static final String SCRIPT_EVENT_SET_CHATBOX_INPUT = "setChatboxInput";
 
 	private ChatboxTextInput searchInput;
@@ -219,7 +224,7 @@ public class RandomScapePlugin extends Plugin
 	private File profileFolder;
 	private String profileKey;
 
-	private List<Integer> cachedTradableItems;
+	public List<Integer> cachedTradableItems;
 	private boolean swapView = false;
 	private Widget hoveredSpellWidget;
 
@@ -323,10 +328,10 @@ public class RandomScapePlugin extends Plugin
 			log.debug("Script ID: " + event.getScriptId() + " Script Event Name: " + event.getScriptEvent());
 		}
 
-		if (event.getScriptId() == MAGIC_SPELLBOOK_HASRUNES) {
+		/*if (event.getScriptId() == MAGIC_SPELLBOOK_HASRUNES) {
 			ScriptEvent e = event.getScriptEvent();
 			log.debug(Arrays.toString(e.getArguments()));
-		}
+		}*/
 	}
 
 	@Subscribe
@@ -388,23 +393,25 @@ public class RandomScapePlugin extends Plugin
 	public void onLootReceived(LootReceived event) {
 		Collection<ItemStack> items = event.getItems();
 		for (ItemStack itemStack : items) {
-			final int itemId = itemStack.getId();
-			final int realItemId = itemManager.canonicalize(itemId);
-			final boolean isTradeable = itemManager.getItemComposition(realItemId).isTradeable();
+			int itemId = itemStack.getId();
+			int realItemId = itemManager.canonicalize(itemId);
+			ItemComposition itemComposition = itemManager.getItemComposition(realItemId);
+			int noteId = itemComposition.getNote();
+			boolean detectedItemIsTradable = itemComposition.isTradeable();
 
-			if (itemId == -1 || unlockedItems.containsKey(realItemId)) {
+			if (itemId == -1 || itemId != realItemId && itemId == noteId || unlockedItems.containsKey(realItemId)) {
 				continue;
 			}
 
-			if (!isTradeable && !unlockedItems.containsKey(realItemId)) {
-				queueItemUnlock(realItemId, realItemId);
+			if (!detectedItemIsTradable) {
+				queueItemUnlock(realItemId, realItemId, false);
 				notifyPlayerOfUnlock(realItemId);
 				continue;
 			}
 
 			int randomItemId = getRandomTradableItem(cachedTradableItems);
-				queueItemUnlock(realItemId, randomItemId);
-				notifyPlayerOfUnlock(randomItemId);
+			queueItemUnlock(realItemId, randomItemId, true);
+			notifyPlayerOfUnlock(randomItemId);
 		}
 	}
 
@@ -866,25 +873,23 @@ public class RandomScapePlugin extends Plugin
 		{
 			int itemId = i.getId();
 			int realItemId = itemManager.canonicalize(itemId);
-			ItemComposition itemComposition = itemManager.getItemComposition(itemId);
+			ItemComposition itemComposition = itemManager.getItemComposition(realItemId);
 			int noteId = itemComposition.getNote();
 			boolean detectedItemIsTradable = itemComposition.isTradeable();
 
-			if (itemId == -1 || itemId != realItemId && itemId == noteId) {
+			if (itemId == -1 || itemId != realItemId && itemId == noteId || unlockedItems.containsKey(realItemId)) {
 				continue;
 			}
 
-			if (!detectedItemIsTradable && !unlockedItems.containsKey(realItemId) && itemId == realItemId) {
-				queueItemUnlock(realItemId, realItemId);
+			if (!detectedItemIsTradable) {
+				queueItemUnlock(realItemId, realItemId, false);
 				notifyPlayerOfUnlock(realItemId);
+				continue;
 			}
 
-			if (!unlockedItems.containsKey(realItemId))
-			{
-				int randomItemId = getRandomTradableItem(cachedTradableItems);
-				queueItemUnlock(realItemId, randomItemId);
-				notifyPlayerOfUnlock(randomItemId);
-			}
+			int randomItemId = getRandomTradableItem(cachedTradableItems);
+			queueItemUnlock(realItemId, randomItemId, true);
+			notifyPlayerOfUnlock(randomItemId);
 		}
 	}
 
@@ -904,7 +909,7 @@ public class RandomScapePlugin extends Plugin
 		return tradableItems;
 	}
 
-	private int getRandomTradableItem(List<Integer> tradableItems)
+	public int getRandomTradableItem(List<Integer> tradableItems)
 	{
 		Random random = new Random();
 		Integer itemId = tradableItems.get(random.nextInt(tradableItems.size()));
@@ -916,7 +921,7 @@ public class RandomScapePlugin extends Plugin
 		return itemId;
 	}
 
-	private void notifyPlayerOfUnlock(int unlockedItemId)
+	public void notifyPlayerOfUnlock(int unlockedItemId)
 	{
 		String unlockedItemName = client.getItemDefinition(unlockedItemId).getName();
 		if (config.sendNotification())
@@ -929,10 +934,12 @@ public class RandomScapePlugin extends Plugin
 		}
 	}
 
-	public void queueItemUnlock(int detectedItemId, int unlockedItemId)
+	public void queueItemUnlock(int detectedItemId, int unlockedItemId, boolean showNotification)
 	{
 		unlockedItems.put(detectedItemId, unlockedItemId);
-		randomScapeOverlay.addItemUnlock(unlockedItemId);
+		if (showNotification) {
+			randomScapeOverlay.addItemUnlock(unlockedItemId);
+		}
 		savePlayerUnlocks();
 	}
 
@@ -955,8 +962,8 @@ public class RandomScapePlugin extends Plugin
 
 	private void unlockDefaultItems()
 	{
-		queueItemUnlock(ItemID.COINS_995, ItemID.COINS_995);
-		queueItemUnlock(ItemID.OLD_SCHOOL_BOND, ItemID.OLD_SCHOOL_BOND);
+		queueItemUnlock(ItemID.COINS_995, ItemID.COINS_995, false);
+		queueItemUnlock(ItemID.OLD_SCHOOL_BOND, ItemID.OLD_SCHOOL_BOND, false);
 	}
 
 	private void sendChatMessage(String chatMessage)
@@ -1087,7 +1094,7 @@ public class RandomScapePlugin extends Plugin
 	{
 		boolean screenshotUnlock = config.screenshotUnlock();
 		boolean includeFrame = config.includeFrame();
-		randomScapeOverlay.updateScreenshotUnlock(screenshotUnlock, includeFrame);
+		//randomScapeOverlay.updateScreenshotUnlock(screenshotUnlock, includeFrame);
 	}
 
 	private boolean isSeasonalWorld(int worldNumber)
@@ -1141,7 +1148,6 @@ public class RandomScapePlugin extends Plugin
 
 	private void resetItemUnlocks(){
 		try {
-			profileFile.delete();
 			unlockedItems.clear();
 			savePlayerUnlocks();
 			unlockDefaultItems();
@@ -1149,7 +1155,6 @@ public class RandomScapePlugin extends Plugin
 			unlockItemContainerItems(client.getItemContainer(InventoryID.EQUIPMENT));
 		} catch (Exception e) {
 			e.printStackTrace();
-			return;
 		}
 	}
 
@@ -1173,12 +1178,13 @@ public class RandomScapePlugin extends Plugin
 					StandardCopyOption.REPLACE_EXISTING);
 		} catch (IOException e) {
 			e.printStackTrace();
-			return;
 		}
 	}
 
 	private void loadResources()
 	{
 		unlockImage = ImageUtil.getResourceStreamFromClass(getClass(), "/item-unlocked.png");
+		unlockImageNoText = ImageUtil.getResourceStreamFromClass(getClass(), "/item-unlocked-no-text.png");;
+		unlockImageText = ImageUtil.getResourceStreamFromClass(getClass(), "/item-unlocked-text.png");;
 	}
 }

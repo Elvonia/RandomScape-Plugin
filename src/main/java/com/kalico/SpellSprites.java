@@ -1,4 +1,4 @@
-package com.kalico.randomscape;
+package com.kalico;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -192,15 +192,9 @@ public class SpellSprites {
         spellToDisabledMap.put(2984, 2990); // Resurrect Greater Zombie -> Resurrect Greater Zombie Disabled
     }
 
-    public void shutdown() {
-        spellToDisabledMap.clear();
-    }
+    public void shutdown() { spellToDisabledMap.clear(); }
 
-    public Integer getDisabledSpriteId(int spriteId) {
-        return spellToDisabledMap.get(spriteId);
-    }
+    public Integer getDisabledSpriteId(int spriteId) { return spellToDisabledMap.get(spriteId); }
 
-    public boolean isDisabled(int spriteId) {
-        return spellToDisabledMap.containsValue(spriteId);
-    }
+    public boolean isDisabled(int spriteId) { return spellToDisabledMap.containsValue(spriteId); }
 }

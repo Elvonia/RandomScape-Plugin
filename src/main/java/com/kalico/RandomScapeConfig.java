@@ -1,4 +1,4 @@
-package com.kalico.randomscape;
+package com.kalico;
 
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
