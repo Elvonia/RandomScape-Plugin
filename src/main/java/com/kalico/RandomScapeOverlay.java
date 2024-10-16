@@ -22,31 +22,14 @@ public class RandomScapeOverlay extends Overlay
 
     private final Client client;
     private final RandomScapePlugin plugin;
-    private int currentUnlock;
     private int displayY;
     private int displayX;
     private long displayTime;
     private final List<ItemSlot> itemList;
-    private boolean notified;
     private boolean isResized;
-    private boolean isSpinning;
-    private int centerPos;
-    private boolean centered;
 
     @Inject
     private ItemManager itemManager;
-
-    @Inject
-    private ImageCapture imageCapture;
-
-    @Inject
-    private ClientUI clientUi;
-
-    @Inject
-    private ScheduledExecutorService executor;
-
-    @Inject
-    private DrawManager drawManager;
 
     @Inject
     public RandomScapeOverlay(Client client, RandomScapePlugin plugin)
@@ -55,21 +38,18 @@ public class RandomScapeOverlay extends Overlay
         this.client = client;
         this.plugin = plugin;
         this.itemList = new ArrayList<>();
-        this.notified = false;
         setPosition(OverlayPosition.TOP_CENTER);
     }
 
     public void addItemUnlock(List<Integer> itemIds)
     {
-        notified = false;
         isResized = client.isResized();
-
         for (int itemId : itemIds) {
             ItemSlot itemSlot = new ItemSlot(itemId, itemManager.getImage(itemId));
             itemList.add(itemSlot);
+
             log.debug("W: {} H: {}", itemSlot.image.getWidth(), itemSlot.image.getHeight());
         }
-        currentUnlock = itemList.get(2).itemId;
     }
 
     @Override
@@ -83,7 +63,6 @@ public class RandomScapeOverlay extends Overlay
         {
             displayY = -20;
             displayTime = System.currentTimeMillis();
-            centered = false;
             return null;
         }
         if (isResized) // x-axis correction for fixed/resized modes
@@ -92,9 +71,6 @@ public class RandomScapeOverlay extends Overlay
         } else {
             displayX = -93;
         }
-
-        centerPos = displayX + 5 + (176 / 2) + 18;
-
         if (System.currentTimeMillis() > displayTime + (5000)) {
             graphics.drawImage(plugin.getUnlockImageText(), displayX, displayY, null);
         }
@@ -124,12 +100,8 @@ public class RandomScapeOverlay extends Overlay
                 if (item.x == null) {
                     continue;
                 }
-                if (System.currentTimeMillis() > displayTime + (5000)) {
-                    item.isSpinning = false;
-                } else {
-                    item.isSpinning = true;
-                }
-                if (item.isSpinning == false) {
+                item.isSpinning = System.currentTimeMillis() <= displayTime + (5000);
+                if (!item.isSpinning) {
                     continue;
                 }
                 if (item.x < displayX + 5 && item.getImage().getWidth() == 1) {
@@ -143,9 +115,9 @@ public class RandomScapeOverlay extends Overlay
                     //log.debug("CropL ID: {} W: {}", item.itemId, item.getImage().getWidth());
                 }
                 if (item.x < displayX + 5 + 176 && item.x > displayX + 5 + 140) {
-                    log.debug("Item X: {}", item.x - (displayX + 5 + 140));
+                    //log.debug("Item X: {}", item.x - (displayX + 5 + 140));
                     item.cropRightImage(item.x - (displayX + 5 + 140));
-                    log.debug("CropR ID: {} W: {}", item.itemId, item.getImage().getWidth());
+                    //log.debug("CropR ID: {} W: {}", item.itemId, item.getImage().getWidth());
                 }
             }
         }

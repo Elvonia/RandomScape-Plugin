@@ -83,7 +83,7 @@ public class RandomScapePlugin extends Plugin
 	final int SHOP_CHILD_ID = 16;
 	final int BANK_ITEM_CONTAINER_GROUP_ID = 12;
 	final int BANK_ITEM_CONTAINER_CHILD_ID = 13;
-	final int MAGIC_SPELL_PREVIEW_GROUP_ID = 218;
+	final int SPELLBOOK_GROUP_ID = 218;
 	final int MAGIC_SPELL_PREVIEW_CHILD_ID = 202;
 	final int INVENTORY_BANK_GROUP_ID = 15;
 	final int INVENTORY_BANK_CHILD_ID = 3;
@@ -273,6 +273,31 @@ public class RandomScapePlugin extends Plugin
 	}
 
 	@Subscribe
+	public void onWidgetLoaded(WidgetLoaded widgetLoaded) {
+		log.debug("{}", widgetLoaded.toString());
+		log.debug("{}", widgetLoaded.hashCode());
+	}
+
+	@Subscribe
+	public void onVarbitChanged(VarbitChanged varbitChanged) {
+		if (varbitChanged.getVarbitId() == Varbits.SPELLBOOK) {
+			log.debug("Varbit.SPELLBOOK");
+			// ID = 4070
+			// Normal = 0
+			// Ancients = 1
+			//
+			log.debug("Id: {} Value: {}", varbitChanged.getVarbitId(), varbitChanged.getValue());
+		}
+		if (varbitChanged.getVarbitId() == Varbits.SPELLBOOK_SUBMENU) {
+			log.debug("Varbit.SPELLBOOK_SUBMENU");
+			// ID = 9730
+			// Normal = 0
+			// Jewelry = 1
+			log.debug("Id: {} Value: {}", varbitChanged.getVarbitId(), varbitChanged.getValue());
+		}
+	}
+
+	@Subscribe
 	public void onGameStateChanged(GameStateChanged e)
 	{
 		if (e.getGameState() == GameState.LOGGED_IN)
@@ -325,7 +350,7 @@ public class RandomScapePlugin extends Plugin
 				event.getScriptId() == MAGIC_SPELLBOOK_REDRAW_PROC ||
 				event.getScriptId() == MAGIC_SPELLBOOK_INIT ||
 				event.getScriptId() == MAGIC_SPELLBOOK_INIT_SPELLS) {
-			log.debug("Script ID: " + event.getScriptId() + " Script Event Name: " + event.getScriptEvent());
+			//log.debug("Script ID: " + event.getScriptId() + " Script Event Name: " + event.getScriptEvent());
 		}
 
 		/*if (event.getScriptId() == MAGIC_SPELLBOOK_HASRUNES) {
@@ -352,9 +377,9 @@ public class RandomScapePlugin extends Plugin
 		if (event.getScriptId() == INVENTORY_DRAW_ITEM || event.getScriptId() == INVENTORY_ITEM_MENU ||
 				event.getScriptId() == INVENTORY_SHOP_INIT_ITEMS) {
 			updateIconOpacity(INVENTORY_GROUP_ID, INVENTORY_CHILD_ID);
+			updateIconOpacity(BANK_ITEM_CONTAINER_GROUP_ID, BANK_ITEM_CONTAINER_CHILD_ID);
 			updateIconOpacity(SHOP_INVENTORY_GROUP_ID, SHOP_INVENTORY_CHILD_ID);
 			updateIconOpacity(SHOP_GROUP_ID, SHOP_CHILD_ID);
-			updateIconOpacity(BANK_ITEM_CONTAINER_GROUP_ID, BANK_ITEM_CONTAINER_CHILD_ID);
 		}
 
 		if (event.getScriptId() == INITIATE_SHOP_INTERFACE) {
@@ -471,7 +496,7 @@ public class RandomScapePlugin extends Plugin
 	}
 
 	private void updateSpellbookItemChecks(Widget hoveredSpellWidget) {
-		Widget spellPreviewWidget = client.getWidget(MAGIC_SPELL_PREVIEW_GROUP_ID, MAGIC_SPELL_PREVIEW_CHILD_ID);
+		Widget spellPreviewWidget = client.getWidget(SPELLBOOK_GROUP_ID, MAGIC_SPELL_PREVIEW_CHILD_ID);
 		Widget[] spellPreviewWidgets = spellPreviewWidget.getDynamicChildren();
 
 		if (spellPreviewWidgets.length == 0 || hoveredSpellWidget == null) {
@@ -914,7 +939,7 @@ public class RandomScapePlugin extends Plugin
 		Random random = new Random();
 		Integer itemId = tradableItems.get(random.nextInt(tradableItems.size()));
 		for (int[] range : EXCLUDED_ITEM_IDS) {
-			if (itemId >= range[0] && itemId <= range[1]) {
+			if (itemId >= range[0] && itemId <= range[1] || unlockedItems.containsValue(itemId)) {
 				return getRandomTradableItem(tradableItems);
 			}
 		}
